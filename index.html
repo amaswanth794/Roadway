@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Offline Runner Game</title>
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+background:#111;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+overflow:hidden;
+font-family:Arial;
+}
+
+#game{
+position:relative;
+width:420px;
+height:700px;
+background:#444;
+overflow:hidden;
+border:6px solid white;
+}
+
+.roadLine{
+position:absolute;
+width:10px;
+height:100px;
+background:white;
+left:205px;
+}
+
+#player{
+position:absolute;
+width:55px;
+height:90px;
+background:cyan;
+border-radius:8px;
+bottom:25px;
+left:180px;
+}
+
+.enemy{
+position:absolute;
+width:55px;
+height:90px;
+background:red;
+border-radius:8px;
+}
+
+#score{
+position:absolute;
+left:10px;
+top:10px;
+color:white;
+font-size:25px;
+font-weight:bold;
+z-index:100;
+}
+</style>
+</head>
+
+<body>
+
+<div id="game">
+
+<div id="score">Score : 0</div>
+
+<div id="player"></div>
+
+</div>
+
+<script>
+
+const game=document.getElementById("game");
+const player=document.getElementById("player");
+const scoreBox=document.getElementById("score");
+
+let keys={
+ArrowLeft:false,
+ArrowRight:false,
+ArrowUp:false,
+ArrowDown:false
+};
+
+let score=0;
+let speed=6;
+let playing=true;
+
+let playerX=180;
+let playerY=585;
+
+for(let i=0;i<8;i++){
+
+let line=document.createElement("div");
+line.className="roadLine";
+line.style.top=(i*100)+"px";
+game.appendChild(line);
+
+}
+
+function createEnemy(){
+
+let enemy=document.createElement("div");
+
+enemy.className="enemy";
+
+enemy.style.left=(Math.random()*320+20)+"px";
+
+enemy.style.top="-120px";
+
+game.appendChild(enemy);
+
+}
+
+for(let i=0;i<3;i++) createEnemy();
+
+document.addEventListener("keydown",(e)=>{
+
+if(keys.hasOwnProperty(e.key))
+keys[e.key]=true;
+
+});
+
+document.addEventListener("keyup",(e)=>{
+
+if(keys.hasOwnProperty(e.key))
+keys[e.key]=false;
+
+});
+
+function collide(a,b){
+
+let r1=a.getBoundingClientRect();
+let r2=b.getBoundingClientRect();
+
+return !(
+
+r1.bottom<r2.top||
+r1.top>r2.bottom||
+r1.right<r2.left||
+r1.left>r2.right
+
+);
+
+}
+
+function gameLoop(){
+
+if(!playing) return;
+
+document.querySelectorAll(".roadLine").forEach(line=>{
+
+let y=parseInt(line.style.top);
+
+y+=speed;
+
+if(y>700) y=-100;
+
+line.style.top=y+"px";
+
+});
+
+if(keys.ArrowLeft && playerX>0)
+playerX-=6;
+
+if(keys.ArrowRight && playerX<365)
+playerX+=6;
+
+if(keys.ArrowUp && playerY>0)
+playerY-=5;
+
+if(keys.ArrowDown && playerY<610)
+playerY+=5;
+
+player.style.left=playerX+"px";
+player.style.top=playerY+"px";
+
+document.querySelectorAll(".enemy").forEach(enemy=>{
+
+let y=parseInt(enemy.style.top);
+
+y+=speed+2;
+
+if(y>720){
+
+y=-120;
+
+enemy.style.left=(Math.random()*320+20)+"px";
+
+score++;
+
+scoreBox.innerHTML="Score : "+score;
+
+}
+
+enemy.style.top=y+"px";
+
+if(collide(player,enemy)){
+
+playing=false;
+
+alert("Game Over\nScore : "+score);
+
+location.reload();
+
+}
+
+});
+
+requestAnimationFrame(gameLoop);
+
+}
+
+gameLoop();
+
+</script>
+
+</body>
+</html>
